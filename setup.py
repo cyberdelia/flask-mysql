@@ -1,6 +1,7 @@
 # -*- coding: UTF-8 -*-
 from setuptools import setup
 
+
 setup(
     name='Flask-MySQL',
     version='1.0',
@@ -14,7 +15,8 @@ setup(
     zip_safe=False,
     platforms='any',
     install_requires=[
-        'Flask'
+        'Flask',
+        'MySQL-python'
     ],
     classifiers=[
         'Environment :: Web Environment',
