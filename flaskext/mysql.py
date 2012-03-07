@@ -20,6 +20,7 @@ class MySQL(object):
         self.app.config.setdefault('MYSQL_DATABASE_USER', None)
         self.app.config.setdefault('MYSQL_DATABASE_PASSWORD', None)
         self.app.config.setdefault('MYSQL_DATABASE_DB', None)
+        self.app.config.setdefault('MYSQL_DATABASE_CHARSET', 'utf8')
         self.app.teardown_request(self.teardown_request)
         self.app.before_request(self.before_request)
 
@@ -35,6 +36,8 @@ class MySQL(object):
             kwargs['passwd'] = self.app.config['MYSQL_DATABASE_PASSWORD']
         if self.app.config['MYSQL_DATABASE_DB']:
             kwargs['db'] = self.app.config['MYSQL_DATABASE_DB']
+        if self.app.config['MYSQL_DATABASE_CHARSET']:
+            kwargs['charset'] = self.app.config['MYSQL_DATABASE_CHARSET']
         return MySQLdb.connect(**kwargs)
 
     def before_request(self):
