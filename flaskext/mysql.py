@@ -6,7 +6,8 @@ from flask import _request_ctx_stack
 
 
 class MySQL(object):
-    def __init__(self, app=None):
+    def __init__(self, app=None, custom_args={}):
+        self.custom_connect_args = custom_args 
         if app is not None:
             self.app = app
             self.init_app(self.app)
@@ -25,8 +26,7 @@ class MySQL(object):
         self.app.teardown_request(self.teardown_request)
         self.app.before_request(self.before_request)
 
-    def connect(self):
-        kwargs = {}
+    def connect(self, kwargs = {}):
         if self.app.config['MYSQL_DATABASE_HOST']:
             kwargs['host'] = self.app.config['MYSQL_DATABASE_HOST']
         if self.app.config['MYSQL_DATABASE_PORT']:
@@ -45,7 +45,7 @@ class MySQL(object):
 
     def before_request(self):
         ctx = _request_ctx_stack.top
-        ctx.mysql_db = self.connect()
+        ctx.mysql_db = self.connect(kwargs=self.custom_connect_args)
 
     def teardown_request(self, exception):
         ctx = _request_ctx_stack.top
