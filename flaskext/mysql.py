@@ -21,6 +21,7 @@ class MySQL(object):
         self.app.config.setdefault('MYSQL_DATABASE_PASSWORD', None)
         self.app.config.setdefault('MYSQL_DATABASE_DB', None)
         self.app.config.setdefault('MYSQL_DATABASE_CHARSET', 'utf8')
+        self.app.config.setdefault('MYSQL_USE_UNICODE', True)
         self.app.teardown_request(self.teardown_request)
         self.app.before_request(self.before_request)
 
