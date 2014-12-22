@@ -6,8 +6,8 @@ from flask import _request_ctx_stack
 
 
 class MySQL(object):
-    def __init__(self, app=None, custom_args={}):
-        self.custom_connect_args = custom_args 
+    def __init__(self, app=None, **connect_args):
+        self.connect_args = connect_args
         if app is not None:
             self.app = app
             self.init_app(self.app)
@@ -26,26 +26,26 @@ class MySQL(object):
         self.app.teardown_request(self.teardown_request)
         self.app.before_request(self.before_request)
 
-    def connect(self, kwargs = {}):
+    def connect(self):
         if self.app.config['MYSQL_DATABASE_HOST']:
-            kwargs['host'] = self.app.config['MYSQL_DATABASE_HOST']
+            self.connect_args['host'] = self.app.config['MYSQL_DATABASE_HOST']
         if self.app.config['MYSQL_DATABASE_PORT']:
-            kwargs['port'] = self.app.config['MYSQL_DATABASE_PORT']
+            self.connect_args['port'] = self.app.config['MYSQL_DATABASE_PORT']
         if self.app.config['MYSQL_DATABASE_USER']:
-            kwargs['user'] = self.app.config['MYSQL_DATABASE_USER']
+            self.connect_args['user'] = self.app.config['MYSQL_DATABASE_USER']
         if self.app.config['MYSQL_DATABASE_PASSWORD']:
-            kwargs['passwd'] = self.app.config['MYSQL_DATABASE_PASSWORD']
+            self.connect_args['passwd'] = self.app.config['MYSQL_DATABASE_PASSWORD']
         if self.app.config['MYSQL_DATABASE_DB']:
-            kwargs['db'] = self.app.config['MYSQL_DATABASE_DB']
+            self.connect_args['db'] = self.app.config['MYSQL_DATABASE_DB']
         if self.app.config['MYSQL_DATABASE_CHARSET']:
-            kwargs['charset'] = self.app.config['MYSQL_DATABASE_CHARSET']
+            self.connect_args['charset'] = self.app.config['MYSQL_DATABASE_CHARSET']
         if self.app.config['MYSQL_USE_UNICODE']:
-            kwargs['use_unicode'] = self.app.config['MYSQL_USE_UNICODE']
-        return MySQLdb.connect(**kwargs)
+            self.connect_args['use_unicode'] = self.app.config['MYSQL_USE_UNICODE']
+        return MySQLdb.connect(**self.connect_args)
 
     def before_request(self):
         ctx = _request_ctx_stack.top
-        ctx.mysql_db = self.connect(kwargs=self.custom_connect_args)
+        ctx.mysql_db = self.connect()
 
     def teardown_request(self, exception):
         ctx = _request_ctx_stack.top
