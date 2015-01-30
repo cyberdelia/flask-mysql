@@ -1,12 +1,16 @@
 # -*- coding: UTF-8 -*-
 from __future__ import absolute_import
 import MySQLdb
+import sqlalchemy.pool as pool
 
 from flask import _request_ctx_stack
 
 
 class MySQL(object):
-    def __init__(self, app=None):
+    def __init__(self, app=None, pooled=False, max_overflow=10, pool_size=5):
+        self.pooled = pooled
+        self.max_overflow = max_overflow
+        self.pool_size = pool_size
         if app is not None:
             self.app = app
             self.init_app(self.app)
@@ -24,6 +28,13 @@ class MySQL(object):
         self.app.config.setdefault('MYSQL_USE_UNICODE', True)
         self.app.teardown_request(self.teardown_request)
         self.app.before_request(self.before_request)
+        if self.pooled:
+            self.pooled_connection()
+
+    def pooled_connection(self):
+        self.pool = pool.QueuePool(self.connect, 
+                                   max_overflow=self.max_overflow, 
+                                   pool_size=self.pool_size)
 
     def connect(self):
         kwargs = {}
@@ -45,7 +56,10 @@ class MySQL(object):
 
     def before_request(self):
         ctx = _request_ctx_stack.top
-        ctx.mysql_db = self.connect()
+        if self.pooled:
+          ctx.mysql_db = self.pool.connect()
+        else:
+          ctx.mysql_db = self.connect()
 
     def teardown_request(self, exception):
         ctx = _request_ctx_stack.top
