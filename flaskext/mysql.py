@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 from __future__ import absolute_import
-import MySQLdb
+import pymysql
 
 from flask import _request_ctx_stack
 
@@ -34,14 +34,14 @@ class MySQL(object):
         if self.app.config['MYSQL_DATABASE_USER']:
             self.connect_args['user'] = self.app.config['MYSQL_DATABASE_USER']
         if self.app.config['MYSQL_DATABASE_PASSWORD']:
-            self.connect_args['passwd'] = self.app.config['MYSQL_DATABASE_PASSWORD']
+            self.connect_args['password'] = self.app.config['MYSQL_DATABASE_PASSWORD']
         if self.app.config['MYSQL_DATABASE_DB']:
             self.connect_args['db'] = self.app.config['MYSQL_DATABASE_DB']
         if self.app.config['MYSQL_DATABASE_CHARSET']:
             self.connect_args['charset'] = self.app.config['MYSQL_DATABASE_CHARSET']
         if self.app.config['MYSQL_USE_UNICODE']:
             self.connect_args['use_unicode'] = self.app.config['MYSQL_USE_UNICODE']
-        return MySQLdb.connect(**self.connect_args)
+        return pymysql.connect(**self.connect_args)
 
     def before_request(self):
         ctx = _request_ctx_stack.top

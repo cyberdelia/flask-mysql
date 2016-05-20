@@ -16,7 +16,7 @@ setup(
     platforms='any',
     install_requires=[
         'Flask',
-        'MySQL-python'
+        'PyMySQL'
     ],
     classifiers=[
         'Environment :: Web Environment',
