@@ -2,8 +2,10 @@
 from __future__ import absolute_import
 import pymysql
 
-from flask import _request_ctx_stack
-
+try:
+    from flask import _app_ctx_stack as _ctx_stack
+except ImportError:
+    from flask import _request_ctx_stack as _ctx_stack
 
 class MySQL(object):
     def __init__(self, app=None, **connect_args):
@@ -23,8 +25,15 @@ class MySQL(object):
         self.app.config.setdefault('MYSQL_DATABASE_DB', None)
         self.app.config.setdefault('MYSQL_DATABASE_CHARSET', 'utf8')
         self.app.config.setdefault('MYSQL_USE_UNICODE', True)
-        self.app.teardown_request(self.teardown_request)
-        self.app.before_request(self.before_request)
+        #Flask 0.9 or later
+        if hasattr(app, 'teardown_appcontext'):
+            self.app.teardown_request(self.teardown_request)
+        #Flask 0.7 to 0.8
+        elif hasattr(app, 'teardown_request'):
+            self.app.teardown_request(self.teardown_request)
+        #Older versions
+        else:
+            self.app.after_request(self.teardown_request)
 
     def connect(self):
         if self.app.config['MYSQL_DATABASE_HOST']:
@@ -43,16 +52,14 @@ class MySQL(object):
             self.connect_args['use_unicode'] = self.app.config['MYSQL_USE_UNICODE']
         return pymysql.connect(**self.connect_args)
 
-    def before_request(self):
-        ctx = _request_ctx_stack.top
-        ctx.mysql_db = self.connect()
-
     def teardown_request(self, exception):
-        ctx = _request_ctx_stack.top
+        ctx = _ctx_stack.top
         if hasattr(ctx, "mysql_db"):
             ctx.mysql_db.close()
 
     def get_db(self):
-        ctx = _request_ctx_stack.top
+        ctx = _ctx_stack.top
         if ctx is not None:
+            if not hasattr(ctx, "mysql_db"):
+                ctx.mysql_db = self.connect()
             return ctx.mysql_db
