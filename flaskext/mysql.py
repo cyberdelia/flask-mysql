@@ -10,6 +10,12 @@ except ImportError:
 class MySQL(object):
     def __init__(self, app=None, **connect_args):
         self.connect_args = connect_args
+        self.cursorclass = {
+            'cursor': pymysql.cursors.Cursor,
+            'sscursor': pymysql.cursors.SSCursor,
+            'dictcursor': pymysql.cursors.DictCursor,
+            'ssdictcursor': pymysql.cursors.SSDictCursor
+        }
         if app is not None:
             self.app = app
             self.init_app(self.app)
@@ -23,8 +29,9 @@ class MySQL(object):
         self.app.config.setdefault('MYSQL_DATABASE_USER', None)
         self.app.config.setdefault('MYSQL_DATABASE_PASSWORD', None)
         self.app.config.setdefault('MYSQL_DATABASE_DB', None)
-        self.app.config.setdefault('MYSQL_DATABASE_CHARSET', 'utf8')
+        self.app.config.setdefault('MYSQL_DATABASE_CHARSET', 'utf8mb4')
         self.app.config.setdefault('MYSQL_USE_UNICODE', True)
+        self.app.config.setdefault('MYSQL_CURSOR_CLASS', 'cursor')
         #Flask 0.9 or later
         if hasattr(app, 'teardown_appcontext'):
             self.app.teardown_request(self.teardown_request)
@@ -50,6 +57,8 @@ class MySQL(object):
             self.connect_args['charset'] = self.app.config['MYSQL_DATABASE_CHARSET']
         if self.app.config['MYSQL_USE_UNICODE']:
             self.connect_args['use_unicode'] = self.app.config['MYSQL_USE_UNICODE']
+        if self.app.config['MYSQL_CURSOR_CLASS']:
+            self.connect_args['cursorclass'] = self.cursorclass[self.app.config['MYSQL_CURSOR_CLASS']]
         return pymysql.connect(**self.connect_args)
 
     def teardown_request(self, exception):

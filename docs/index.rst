@@ -42,4 +42,3 @@ Initialize the extension : ::
 Obtain a cursor : ::
 
   cursor = mysql.get_db().cursor()
-
