@@ -50,6 +50,8 @@ class MySQL(object):
             self.connect_args['charset'] = self.app.config['MYSQL_DATABASE_CHARSET']
         if self.app.config['MYSQL_USE_UNICODE']:
             self.connect_args['use_unicode'] = self.app.config['MYSQL_USE_UNICODE']
+        if self.app.config['MYSQL_DATABASE_SOCKET']:
+            self.connect_args['unix_socket'] = self.app.config['MYSQL_DATABASE_SOCKET']
         return pymysql.connect(**self.connect_args)
 
     def teardown_request(self, exception):
