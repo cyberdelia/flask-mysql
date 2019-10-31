@@ -57,7 +57,6 @@ class MySQL(object):
     def teardown_request(self, exception):
         ctx = _ctx_stack.top
         if hasattr(ctx, "mysql_dbs"):
-            print("teardown")
             ctx.mysql_dbs[self.prefix].close()
 
     def get_db(self):
