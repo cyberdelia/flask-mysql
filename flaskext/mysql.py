@@ -8,8 +8,9 @@ except ImportError:
     from flask import _request_ctx_stack as _ctx_stack
 
 class MySQL(object):
-    def __init__(self, app=None, **connect_args):
+    def __init__(self, app=None, prefix="mysql",  **connect_args):
         self.connect_args = connect_args
+        self.prefix = prefix
         if app is not None:
             self.app = app
             self.init_app(self.app)
@@ -25,15 +26,7 @@ class MySQL(object):
         self.app.config.setdefault('MYSQL_DATABASE_DB', None)
         self.app.config.setdefault('MYSQL_DATABASE_CHARSET', 'utf8')
         self.app.config.setdefault('MYSQL_USE_UNICODE', True)
-        #Flask 0.9 or later
-        if hasattr(app, 'teardown_appcontext'):
-            self.app.teardown_request(self.teardown_request)
-        #Flask 0.7 to 0.8
-        elif hasattr(app, 'teardown_request'):
-            self.app.teardown_request(self.teardown_request)
-        #Older versions
-        else:
-            self.app.after_request(self.teardown_request)
+
 
     def connect(self):
         if self.app.config['MYSQL_DATABASE_HOST']:
@@ -50,16 +43,28 @@ class MySQL(object):
             self.connect_args['charset'] = self.app.config['MYSQL_DATABASE_CHARSET']
         if self.app.config['MYSQL_USE_UNICODE']:
             self.connect_args['use_unicode'] = self.app.config['MYSQL_USE_UNICODE']
+        # Flask 0.9 or later
+        if hasattr(self.app, 'teardown_appcontext'):
+            self.app.teardown_request(self.teardown_request)
+        # Flask 0.7 to 0.8
+        elif hasattr(self.app, 'teardown_request'):
+            self.app.teardown_request(self.teardown_request)
+        # Older versions
+        else:
+            self.app.after_request(self.teardown_request)
         return pymysql.connect(**self.connect_args)
 
     def teardown_request(self, exception):
         ctx = _ctx_stack.top
-        if hasattr(ctx, "mysql_db"):
-            ctx.mysql_db.close()
+        if hasattr(ctx, "mysql_dbs"):
+            print("teardown")
+            ctx.mysql_dbs[self.prefix].close()
 
     def get_db(self):
         ctx = _ctx_stack.top
         if ctx is not None:
-            if not hasattr(ctx, "mysql_db"):
-                ctx.mysql_db = self.connect()
-            return ctx.mysql_db
+            if not hasattr(ctx, "mysql_dbs"):
+                ctx.mysql_dbs = dict()
+            if self.prefix not in ctx.mysql_dbs:
+                ctx.mysql_dbs[self.prefix] = self.connect()
+            return ctx.mysql_dbs[self.prefix]
