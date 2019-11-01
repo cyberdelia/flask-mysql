@@ -1,7 +1,6 @@
 # -*- coding: UTF-8 -*-
 from __future__ import absolute_import
 import pymysql
-
 try:
     from flask import _app_ctx_stack as _ctx_stack
 except ImportError:
@@ -26,6 +25,15 @@ class MySQL(object):
         self.app.config.setdefault('MYSQL_DATABASE_DB', None)
         self.app.config.setdefault('MYSQL_DATABASE_CHARSET', 'utf8')
         self.app.config.setdefault('MYSQL_USE_UNICODE', True)
+        # Flask 0.9 or later
+        if hasattr(self.app, 'teardown_appcontext'):
+            self.app.teardown_request(self.teardown_request)
+        # Flask 0.7 to 0.8
+        elif hasattr(self.app, 'teardown_request'):
+            self.app.teardown_request(self.teardown_request)
+        # Older versions
+        else:
+            self.app.after_request(self.teardown_request)
 
 
     def connect(self):
@@ -43,21 +51,16 @@ class MySQL(object):
             self.connect_args['charset'] = self.app.config['MYSQL_DATABASE_CHARSET']
         if self.app.config['MYSQL_USE_UNICODE']:
             self.connect_args['use_unicode'] = self.app.config['MYSQL_USE_UNICODE']
-        # Flask 0.9 or later
-        if hasattr(self.app, 'teardown_appcontext'):
-            self.app.teardown_request(self.teardown_request)
-        # Flask 0.7 to 0.8
-        elif hasattr(self.app, 'teardown_request'):
-            self.app.teardown_request(self.teardown_request)
-        # Older versions
-        else:
-            self.app.after_request(self.teardown_request)
         return pymysql.connect(**self.connect_args)
 
     def teardown_request(self, exception):
         ctx = _ctx_stack.top
         if hasattr(ctx, "mysql_dbs"):
-            ctx.mysql_dbs[self.prefix].close()
+            try:
+                if self.prefix in ctx.mysql_dbs and ctx.mysql_dbs[self.prefix].open:
+                    ctx.mysql_dbs[self.prefix].close()
+            except Exception as e:
+                pass
 
     def get_db(self):
         ctx = _ctx_stack.top
