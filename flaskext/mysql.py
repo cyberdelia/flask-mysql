@@ -25,6 +25,7 @@ class MySQL(object):
         self.app.config.setdefault('MYSQL_DATABASE_DB', None)
         self.app.config.setdefault('MYSQL_DATABASE_CHARSET', 'utf8')
         self.app.config.setdefault('MYSQL_USE_UNICODE', True)
+        self.app.config.setdefault('MYSQL_SQL_MODE', None)
         #Flask 0.9 or later
         if hasattr(app, 'teardown_appcontext'):
             self.app.teardown_request(self.teardown_request)
@@ -50,6 +51,8 @@ class MySQL(object):
             self.connect_args['charset'] = self.app.config['MYSQL_DATABASE_CHARSET']
         if self.app.config['MYSQL_USE_UNICODE']:
             self.connect_args['use_unicode'] = self.app.config['MYSQL_USE_UNICODE']
+        if self.app.config['MYSQL_SQL_MODE']:
+            self.connect_args['sql_mode'] = self.app.config['MYSQL_SQL_MODE']
         return pymysql.connect(**self.connect_args)
 
     def teardown_request(self, exception):
