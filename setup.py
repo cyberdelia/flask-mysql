@@ -4,7 +4,7 @@ from setuptools import setup
 
 setup(
     name='Flask-MySQL',
-    version='1.4.1',
+    version='1.5.0',
     url='https://github.com/cyberdelia/flask-mysql/',
     license='BSD',
     author='Timothee Peignier',
