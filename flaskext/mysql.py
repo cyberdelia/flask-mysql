@@ -25,6 +25,7 @@ class MySQL(object):
         self.app.config.setdefault('MYSQL_DATABASE_DB', None)
         self.app.config.setdefault('MYSQL_DATABASE_CHARSET', 'utf8')
         self.app.config.setdefault('MYSQL_USE_UNICODE', True)
+        self.app.config.setdefault('MYSQL_DATABASE_SOCKET', None)
         self.app.config.setdefault('MYSQL_SQL_MODE', None)
         # Flask 0.9 or later
         if hasattr(self.app, 'teardown_appcontext'):
