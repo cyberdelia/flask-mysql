@@ -1,6 +1,6 @@
-# -*- coding: UTF-8 -*-
 from __future__ import absolute_import
-import pymysql
+from mysql.connector import connect, InternalError
+
 try:
     from flask import _app_ctx_stack as _ctx_stack
 except ImportError:
@@ -56,16 +56,16 @@ class MySQL(object):
             self.connect_args['unix_socket'] = self.app.config['MYSQL_DATABASE_SOCKET']
         if self.app.config['MYSQL_SQL_MODE']:
             self.connect_args['sql_mode'] = self.app.config['MYSQL_SQL_MODE']
-        return pymysql.connect(**self.connect_args)
+        return connect(**self.connect_args)
 
     def teardown_request(self, exception):
         ctx = _ctx_stack.top
         if hasattr(ctx, "mysql_dbs"):
             try:
-                if self.prefix in ctx.mysql_dbs and ctx.mysql_dbs[self.prefix].open:
+                if self.prefix in ctx.mysql_dbs and ctx.mysql_dbs[self.prefix].is_connected():
                     ctx.mysql_dbs[self.prefix].close()
             except Exception as e:
-                pass
+                print(e)
 
     def get_db(self):
         ctx = _ctx_stack.top

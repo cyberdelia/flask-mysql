@@ -1,3 +1,7 @@
+Flask-MySQL-Connector
+===========
+This repo was forked from [Flask-MySQL](https://github.com/cyberdelia/flask-mysql) for using it with mysql-connector-python insted of PyMySQL dependency.
+
 Flask-MySQL
 ===========
 
