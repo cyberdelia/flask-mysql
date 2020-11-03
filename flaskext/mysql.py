@@ -27,6 +27,8 @@ class MySQL(object):
         self.app.config.setdefault('MYSQL_USE_UNICODE', True)
         self.app.config.setdefault('MYSQL_DATABASE_SOCKET', None)
         self.app.config.setdefault('MYSQL_SQL_MODE', None)
+        self.app.config.setdefault('MYSQL_CURSORCLASS', None)
+        self.app.config.setdefault('MYSQL_SSL_CA', None)
         # Flask 0.9 or later
         if hasattr(self.app, 'teardown_appcontext'):
             self.app.teardown_request(self.teardown_request)
@@ -56,6 +58,10 @@ class MySQL(object):
             self.connect_args['unix_socket'] = self.app.config['MYSQL_DATABASE_SOCKET']
         if self.app.config['MYSQL_SQL_MODE']:
             self.connect_args['sql_mode'] = self.app.config['MYSQL_SQL_MODE']
+        if self.app.config['MYSQL_CURSORCLASS']:
+            self.connect_args['cursorclass'] = self.app.config['MYSQL_CURSORCLASS']
+        if self.app.config['MYSQL_SSL_CA']:
+            self.connect_args['ssl'] = self.app.config['MYSQL_SSL_CA']
         return pymysql.connect(**self.connect_args)
 
     def teardown_request(self, exception):
